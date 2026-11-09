@@ -8,6 +8,8 @@ import optimise from '../__fixtures__/2026-11-03_optimise_vrtic_roditelj_3.json'
 import problem from '../__fixtures__/2026-11-03_problem_422.json';
 import scoring from '../__fixtures__/2026-11-03_scoring.json';
 import sources from '../__fixtures__/2026-11-03_sources_all.json';
+import { bucketsBetween, projectBuckets } from '../components/WalkBackdrop';
+import type { IsochroneResult } from '../lib/types';
 import { CardPage } from './CardPage';
 import { HomePage } from './HomePage';
 import { MethodologyPage } from './MethodologyPage';
@@ -143,6 +145,12 @@ describe('CardPage', () => {
 });
 
 describe('HomePage', () => {
+  // jsdom has no 2D canvas; the backdrop then simply draws nothing
+  beforeEach(() => {
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+  });
+  afterEach(() => vi.restoreAllMocks());
+
   it('has the headline, an address combobox, three verified example chips and persona choice', async () => {
     vi.stubGlobal(
       'fetch',
@@ -168,12 +176,20 @@ describe('HomePage', () => {
       ),
     );
     renderAt('/?persona=starija', <HomePage />, '/');
-    const backdrop = await screen.findByTestId('walk-backdrop');
-    // one coloured street path per 0.25-minute bucket of the recorded response
-    expect(backdrop.querySelectorAll('path.na-backdrop__street')).toHaveLength(
-      isoStarija.buckets.features.length,
-    );
+    expect((await screen.findByTestId('walk-backdrop')).tagName).toBe('CANVAS');
     expect(screen.getByText(/stigne pješice za 15 min \(starija osoba\)/)).toBeTruthy();
+
+    // one projected bucket per 0.25-minute bucket of the recorded response, in walking-time order
+    const { buckets, extent } = projectBuckets(isoStarija as unknown as IsochroneResult);
+    expect(buckets).toHaveLength(isoStarija.buckets.features.length);
+    expect(buckets.map((b) => b.t)).toEqual([...buckets.map((b) => b.t)].sort((a, b) => a - b));
+    expect(extent).toBeGreaterThan(100); // metres: 15 minutes of walking reach well beyond 100 m
+    // drawing step by step never skips or repeats a bucket
+    const steps = [0, 3, 7.5, 12, 15];
+    const drawn = steps
+      .slice(1)
+      .flatMap((to, i) => bucketsBetween(buckets, steps[i]!, to).map((b) => b.t));
+    expect(drawn).toEqual(buckets.filter((b) => b.t > 0).map((b) => b.t));
   });
 
   it('example chip navigates to the card with the selected persona', () => {

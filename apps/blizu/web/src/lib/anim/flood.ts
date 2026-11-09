@@ -16,7 +16,28 @@ export function frontFilter(t: number, windowMin = 0.75): Expression {
   return ['all', ['<=', ['get', 't'], round(t)], ['>', ['get', 't'], round(t - windowMin)]];
 }
 
-/** Time ramp near -> far (cyan -> violet) as a MapLibre expression on the bucket property `t`. */
+/**
+ * Per-bucket flags for the feature-state flood, with exactly the rules of `floodFilter`/`frontFilter`:
+ * `on` = reached by minute `t`, `front` = reached within the last `windowMin` minutes.
+ */
+export function floodStates(
+  ts: number[],
+  t: number,
+  windowMin = 0.75,
+): { on: boolean[]; front: boolean[] } {
+  const now = round(t);
+  const tail = round(t - windowMin);
+  const on = ts.map((x) => x <= now);
+  const front = ts.map((x, i) => on[i]! && x > tail);
+  return { on, front };
+}
+
+/** Opacity that is `value` when the feature-state flag `key` is set, else 0 (no worker relayout). */
+export function stateOpacity(key: string, value: number): Expression {
+  return ['case', ['boolean', ['feature-state', key], false], value, 0];
+}
+
+/** Time ramp near -> far (navy -> cyan) as a MapLibre expression on the bucket property `t`. */
 export function timeRamp(maxMin: number, near: string, far: string): Expression {
   return ['interpolate', ['linear'], ['get', 't'], 0, near, Math.max(1, maxMin), far];
 }

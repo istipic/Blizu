@@ -223,6 +223,16 @@ export function ResultsScenes({ map, origin, persona, scene, onScene, category, 
     let layer: FloodLayer | null = null;
     const markerList: { f: IsochroneFacility; t: number; marker: MarkerType | null }[] =
       data.facilities.map((f) => ({ f, t: f.t, marker: null }));
+    let started = false;
+    let fallback: ReturnType<typeof setTimeout> | undefined;
+    // the flood starts once the camera has settled: camera, tile loading and flood never share frames
+    const start = () => {
+      if (cancelled || started) return;
+      started = true;
+      if (fallback) clearTimeout(fallback);
+      map.off('moveend', start);
+      playFlood(data, 0, data.max_min, FLOOD_MS);
+    };
     const dispose = whenReady(map, () => {
       if (cancelled) return;
       layer = new FloodLayer(map, data.buckets, data.max_min);
@@ -231,13 +241,14 @@ export function ResultsScenes({ map, origin, persona, scene, onScene, category, 
       if (sceneRef.current !== 'put') {
         const reduced = prefersReducedMotion();
         const box = boundsOf(data);
+        map.once('moveend', start);
+        fallback = setTimeout(start, reduced ? 0 : 1400);
         map.fitBounds(box as LngLatBoundsLike, {
           padding: viewPadding(150),
           maxZoom: 17,
           duration: reduced ? 0 : 900,
           essential: false,
         });
-        playFlood(data, 0, data.max_min, FLOOD_MS);
       } else {
         applyClock(data.max_min, data);
         layer.setFrontVisible(false);
@@ -246,6 +257,8 @@ export function ResultsScenes({ map, origin, persona, scene, onScene, category, 
     });
     return () => {
       cancelled = true;
+      if (fallback) clearTimeout(fallback);
+      map.off('moveend', start);
       dispose();
       player.current?.cancel();
       layer?.destroy();

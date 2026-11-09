@@ -9,9 +9,11 @@ import {
   columnHeightExpression,
   floodClock,
   floodFilter,
+  floodStates,
   frontFilter,
   isReached,
   routeGradient,
+  stateOpacity,
 } from './flood';
 import { bearingAt, buildRoute, haversine, positionAt, walkProgress, type Coord } from './route';
 import { initialScene, nextScene, parseScene, threeDAvailable, withScene } from './scene';
@@ -257,6 +259,23 @@ describe('flood expressions (real /isochrone response)', () => {
       expect(f.properties.t).toBeLessThanOrEqual(10);
       expect(f.properties.t).toBeGreaterThan(9.25);
     }
+  });
+
+  it('feature-state flags follow exactly the same rules as the filters', () => {
+    const ts = features.map((f) => f.properties.t);
+    for (const clock of [0, 0.3, 2.5, 7.4, 9.99, 15]) {
+      const { on, front } = floodStates(ts, clock);
+      features.forEach((f, i) => {
+        expect(on[i]).toBe(evaluate(floodFilter(clock), f.properties.t));
+        expect(front[i]).toBe(evaluate(frontFilter(clock, 0.75), f.properties.t));
+      });
+    }
+    expect(stateOpacity('on', 0.5)).toEqual([
+      'case',
+      ['boolean', ['feature-state', 'on'], false],
+      0.5,
+      0,
+    ]);
   });
 
   it('floodClock maps screen time to minutes and facilities pop at their minute', () => {

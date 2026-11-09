@@ -1,6 +1,6 @@
 import type { FeatureCollection } from 'geojson';
 import type { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl';
-import { floodFilter, frontFilter, routeGradient, timeRamp } from './flood';
+import { floodStates, routeGradient, stateOpacity, timeRamp } from './flood';
 import type { Coord } from './route';
 
 /** Map colours chosen for contrast on the light map (green parks, grey blocks): navy near the address, vivid cyan-blue far away, orange moving front, white casing under every line. */
@@ -18,10 +18,29 @@ function removeAll(map: MapLibreMap, layers: string[], source: string) {
   if (map.getSource(source)) map.removeSource(source);
 }
 
-/** Walking-time flood: glow + crisp line + bright front, all driven by a clock in minutes. */
+const OPACITY = { casing: 0.92, glow: 0.22, line: 1 } as const;
+const DIMMED = { casing: 0.4, glow: 0.1, line: 0.5 } as const;
+const FRONT_OPACITY = 0.95;
+
+/** The same collection with numeric feature ids 0..n-1 (needed for feature-state). */
+function withIds(data: FeatureCollection): FeatureCollection {
+  return { ...data, features: data.features.map((f, i) => ({ ...f, id: i })) };
+}
+
+/**
+ * Walking-time flood: casing + glow + crisp line + bright front, all driven by a clock in minutes.
+ *
+ * The clock only toggles feature-state flags (`on`, `front`) of the buckets whose state changed: no
+ * filter or paint change per frame, so MapLibre never re-lays-out tiles while the flood moves and the
+ * animation stays smooth. At most one state change per bucket and direction during a run.
+ */
 export class FloodLayer {
   private readonly ids = ['flood-casing', 'flood-glow', 'flood-line', 'flood-front'];
   private clockMin = 0;
+  private ts: number[] = [];
+  private on: boolean[] = [];
+  private front: boolean[] = [];
+  private frontVisible = true;
 
   constructor(
     private readonly map: MapLibreMap,
@@ -30,105 +49,90 @@ export class FloodLayer {
   ) {
     const before = firstSymbolId(map);
     const ramp = timeRamp(maxMin, NEAR, FAR) as never;
-    map.addSource('flood', { type: 'geojson', data });
-    map.addLayer(
-      {
-        id: 'flood-casing',
-        type: 'line',
-        source: 'flood',
-        layout: { 'line-cap': 'round', 'line-join': 'round' },
-        paint: {
-          'line-color': '#FFFFFF',
-          'line-width': ['interpolate', ['linear'], ['zoom'], 11, 3.4, 16, 8.6] as never,
-          'line-opacity': 0.92,
+    map.addSource('flood', { type: 'geojson', data: withIds(data) });
+    this.reset(data);
+    const width = (a: number, b: number) =>
+      ['interpolate', ['linear'], ['zoom'], 11, a, 16, b] as never;
+    const add = (id: string, paint: Record<string, unknown>) =>
+      map.addLayer(
+        {
+          id,
+          type: 'line',
+          source: 'flood',
+          layout: { 'line-cap': 'round', 'line-join': 'round' },
+          paint: paint as never,
         },
-      },
-      before,
-    );
-    map.addLayer(
-      {
-        id: 'flood-glow',
-        type: 'line',
-        source: 'flood',
-        layout: { 'line-cap': 'round', 'line-join': 'round' },
-        paint: {
-          'line-color': ramp,
-          'line-width': ['interpolate', ['linear'], ['zoom'], 11, 4, 16, 16] as never,
-          'line-blur': 8,
-          'line-opacity': 0.22,
-        },
-      },
-      before,
-    );
-    map.addLayer(
-      {
-        id: 'flood-line',
-        type: 'line',
-        source: 'flood',
-        layout: { 'line-cap': 'round', 'line-join': 'round' },
-        paint: {
-          'line-color': ramp,
-          'line-width': ['interpolate', ['linear'], ['zoom'], 11, 1.6, 16, 4.6] as never,
-          'line-opacity': 1,
-        },
-      },
-      before,
-    );
-    map.addLayer(
-      {
-        id: 'flood-front',
-        type: 'line',
-        source: 'flood',
-        layout: { 'line-cap': 'round', 'line-join': 'round' },
-        paint: {
-          'line-color': FRONT,
-          'line-width': ['interpolate', ['linear'], ['zoom'], 11, 1.6, 16, 5] as never,
-          'line-blur': 1,
-          'line-opacity': 0.95,
-        },
-      },
-      before,
-    );
+        before,
+      );
+    add('flood-casing', {
+      'line-color': '#FFFFFF',
+      'line-width': width(3.4, 8.6),
+      'line-opacity': stateOpacity('on', OPACITY.casing),
+    });
+    add('flood-glow', {
+      'line-color': ramp,
+      'line-width': width(4, 16),
+      'line-blur': 8,
+      'line-opacity': stateOpacity('on', OPACITY.glow),
+    });
+    add('flood-line', {
+      'line-color': ramp,
+      'line-width': width(1.6, 4.6),
+      'line-opacity': stateOpacity('on', OPACITY.line),
+    });
+    add('flood-front', {
+      'line-color': FRONT,
+      'line-width': width(1.6, 5),
+      'line-blur': 1,
+      'line-opacity': stateOpacity('front', FRONT_OPACITY),
+    });
     this.setClock(0);
+  }
+
+  private reset(data: FeatureCollection) {
+    this.ts = data.features.map((f) => Number((f.properties as { t?: number } | null)?.t ?? 0));
+    this.on = this.ts.map(() => false);
+    this.front = this.ts.map(() => false);
+  }
+
+  /** Writes only the flags that changed since the last call. */
+  private apply(on: boolean[], front: boolean[]) {
+    const m = this.map;
+    if (!m.getSource('flood')) return;
+    for (let i = 0; i < this.ts.length; i += 1) {
+      const nextFront = this.frontVisible && front[i]!;
+      if (on[i] !== this.on[i] || nextFront !== this.front[i]) {
+        m.setFeatureState({ source: 'flood', id: i }, { on: on[i], front: nextFront });
+        this.on[i] = on[i]!;
+        this.front[i] = nextFront;
+      }
+    }
   }
 
   /** Reveals every street reached up to `min` minutes (the data itself comes from the API). */
   setClock(min: number) {
     this.clockMin = min;
-    const m = this.map;
-    const all = floodFilter(min) as never;
-    if (m.getLayer('flood-casing')) m.setFilter('flood-casing', all);
-    if (m.getLayer('flood-glow')) m.setFilter('flood-glow', all);
-    if (m.getLayer('flood-line')) m.setFilter('flood-line', all);
-    // the front is only visible while the flood is moving
-    if (m.getLayer('flood-front')) m.setFilter('flood-front', frontFilter(min) as never);
+    const { on, front } = floodStates(this.ts, min);
+    this.apply(on, front);
   }
 
   /** Rests the front (static final state) or shows it again while animating. */
   setFrontVisible(visible: boolean) {
-    if (this.map.getLayer('flood-front'))
-      this.map.setPaintProperty('flood-front', 'line-opacity', visible ? 0.95 : 0);
+    this.frontVisible = visible;
+    const { on, front } = floodStates(this.ts, this.clockMin);
+    this.apply(on, front);
   }
 
   /** Dims the flood to ground light (used while a route is shown). */
   setDim(dim: boolean) {
-    for (const id of ['flood-casing', 'flood-glow', 'flood-line'])
+    const v = dim ? DIMMED : OPACITY;
+    const set = (id: string, value: number) => {
       if (this.map.getLayer(id))
-        this.map.setPaintProperty(
-          id,
-          'line-opacity',
-          id === 'flood-casing'
-            ? dim
-              ? 0.4
-              : 0.92
-            : id === 'flood-glow'
-              ? dim
-                ? 0.1
-                : 0.22
-              : dim
-                ? 0.5
-                : 1,
-        );
+        this.map.setPaintProperty(id, 'line-opacity', stateOpacity('on', value) as never);
+    };
+    set('flood-casing', v.casing);
+    set('flood-glow', v.glow);
+    set('flood-line', v.line);
   }
 
   get clock() {
@@ -139,7 +143,12 @@ export class FloodLayer {
   }
 
   setData(data: FeatureCollection) {
-    (this.map.getSource('flood') as GeoJSONSource | undefined)?.setData(data);
+    const source = this.map.getSource('flood') as GeoJSONSource | undefined;
+    if (!source) return;
+    this.map.removeFeatureState({ source: 'flood' });
+    source.setData(withIds(data));
+    this.reset(data);
+    this.setClock(this.clockMin);
   }
 
   destroy() {
