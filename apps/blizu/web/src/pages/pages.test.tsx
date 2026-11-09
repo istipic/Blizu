@@ -160,7 +160,7 @@ describe('HomePage', () => {
     );
   });
 
-  it('draws the real isochrone behind the hero and counts facilities per walking time', async () => {
+  it('draws the real isochrone of the example address behind the hero', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn(async (url: string) =>
@@ -169,22 +169,11 @@ describe('HomePage', () => {
     );
     renderAt('/?persona=starija', <HomePage />, '/');
     const backdrop = await screen.findByTestId('walk-backdrop');
-    // one path per 0.25-minute bucket of the recorded response
-    expect(backdrop.querySelectorAll('path')).toHaveLength(isoStarija.buckets.features.length);
-
-    const tiles = screen
-      .getAllByRole('listitem')
-      .filter((li) => li.className.includes('na-home-tile'));
-    expect(tiles).toHaveLength(9);
-    const ljekarna = () => tiles.find((t) => t.textContent?.startsWith('Ljekarna'))!;
-    await waitFor(() =>
-      expect(ljekarna().textContent).toBe(`Ljekarna${isoStarija.counts['10'].ljekarna}`),
+    // one coloured street path per 0.25-minute bucket of the recorded response
+    expect(backdrop.querySelectorAll('path.na-backdrop__street')).toHaveLength(
+      isoStarija.buckets.features.length,
     );
-
-    fireEvent.click(screen.getByRole('radio', { name: '5 min' }));
-    await waitFor(() =>
-      expect(ljekarna().textContent).toBe(`Ljekarna${isoStarija.counts['5'].ljekarna}`),
-    );
+    expect(screen.getByText(/stigne pješice za 15 min \(starija osoba\)/)).toBeTruthy();
   });
 
   it('example chip navigates to the card with the selected persona', () => {

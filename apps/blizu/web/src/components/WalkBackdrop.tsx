@@ -1,27 +1,23 @@
-import { useMemo } from 'react';
+import { useMemo, type CSSProperties } from 'react';
+import { FAR, FRONT, NEAR } from '../lib/anim/layers';
 import type { IsochroneResult } from '../lib/types';
 
-/** Walking-time ramp of the home backdrop: yellow at the address, cyan halfway, indigo at the limit. */
-const STOPS: [number, [number, number, number]][] = [
-  [0, [250, 204, 21]], // #FACC15
-  [0.5, [34, 211, 238]], // #22D3EE
-  [1, [129, 140, 248]], // #818CF8
-];
+/** "#RRGGBB" -> [r, g, b]. */
+function hexRgb(hex: string): [number, number, number] {
+  const n = Number.parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
 
-/** Colour of a street reached after `share` (0..1) of the time limit. */
+/**
+ * Colour of a street reached after `share` (0..1) of the time limit: the same linear navy -> cyan
+ * ramp as the walking-time flood on the results map (`NEAR`/`FAR` in lib/anim/layers.ts).
+ */
 export function rampColor(share: number): string {
   const f = Math.min(1, Math.max(0, share));
-  for (let i = 1; i < STOPS.length; i += 1) {
-    const [p1, c1] = STOPS[i]!;
-    const [p0, c0] = STOPS[i - 1]!;
-    if (f <= p1) {
-      const k = (f - p0) / (p1 - p0);
-      const c = c0.map((v, j) => Math.round(v + (c1[j]! - v) * k));
-      return `rgb(${c[0]} ${c[1]} ${c[2]})`;
-    }
-  }
-  const last = STOPS[STOPS.length - 1]![1];
-  return `rgb(${last[0]} ${last[1]} ${last[2]})`;
+  const a = hexRgb(NEAR);
+  const b = hexRgb(FAR);
+  const c = a.map((v, i) => Math.round(v + (b[i]! - v) * f));
+  return `rgb(${c[0]} ${c[1]} ${c[2]})`;
 }
 
 export interface BackdropPath {
@@ -68,6 +64,11 @@ export function isochronePaths(data: IsochroneResult): { paths: BackdropPath[]; 
   return { paths, extent };
 }
 
+/** Start of a street's animation: the flood takes 2.4 s from the address to the time limit. */
+function delay(t: number, maxMin: number): string {
+  return `${((t / maxMin) * 2.4).toFixed(2)}s`;
+}
+
 /**
  * Background of the home hero: the real streets reachable on foot from the example address within
  * the time limit (from `GET /api/v1/isochrone`), drawn outwards in walking-time order. Without data
@@ -85,13 +86,29 @@ export function WalkBackdrop({ data }: { data: IsochroneResult | undefined }) {
         preserveAspectRatio="xMidYMid slice"
       >
         <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+          {/* white casing under every street, as on the results map */}
+          {built.paths.map((p) => (
+            <path
+              key={`c${p.t}`}
+              d={p.d}
+              className="na-backdrop__casing"
+              style={{ animationDelay: delay(p.t, data.max_min) }}
+            />
+          ))}
+          {/* streets light up orange (the moving front) and settle on their walking-time colour */}
           {built.paths.map((p) => (
             <path
               key={p.t}
               d={p.d}
               stroke={p.color}
               className="na-backdrop__street"
-              style={{ animationDelay: `${((p.t / data.max_min) * 2.4).toFixed(2)}s` }}
+              style={
+                {
+                  '--street': p.color,
+                  '--front': FRONT,
+                  animationDelay: delay(p.t, data.max_min),
+                } as CSSProperties
+              }
             />
           ))}
         </g>

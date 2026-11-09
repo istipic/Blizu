@@ -2367,13 +2367,14 @@ h3,
 }
 
 /* =====================================================================================================
-   Home v3: dark hero over the real walking network of the example address, scroll sections below.
-   The hero colours are fixed (navy canvas, white text, yellow accent: 15:1 and 11:1) and do not use the
-   light tokens; everything under the hero keeps the checked palette.
+   Home v3: light "paper map" hero over the real walking network of the example address (one screen). Natural palette: warm paper canvas, forest-green accent; the streets use the same
+   colours as the results-map flood (navy near, cyan far, orange front, white casing, red address).
+   Text pairs: ink #1F2A22 on paper 14:1, forest #1E5E3A on paper 7.3:1, on white 7.8:1.
    ===================================================================================================== */
 .na-home {
-  --home-navy: 7 20 38; /* #071426 */
-  --home-yellow: 250 204 21; /* #FACC15 */
+  --home-paper: 247 244 236; /* #F7F4EC */
+  --home-ink: 31 42 34; /* #1F2A22 */
+  --home-forest: 30 94 58; /* #1E5E3A */
 }
 .na-home-hero {
   position: relative;
@@ -2381,10 +2382,10 @@ h3,
   overflow: hidden;
   display: grid;
   align-items: center;
-  min-height: calc(100vh - var(--na-header-h));
-  padding: 3.5rem 1rem 9rem;
-  background: rgb(var(--home-navy));
-  color: #fff;
+  min-height: calc(100vh - var(--na-header-h) - 4.75rem);
+  padding: 3rem 1rem 8rem;
+  background: rgb(var(--home-paper));
+  color: rgb(var(--home-ink));
 }
 .na-home-hero::after {
   /* readability veil between the streets and the text */
@@ -2395,8 +2396,8 @@ h3,
   pointer-events: none;
   background: radial-gradient(
     ellipse 34% 46% at 50% 40%,
-    rgb(var(--home-navy) / 0.82),
-    rgb(var(--home-navy) / 0.25) 65%,
+    rgb(var(--home-paper) / 0.92),
+    rgb(var(--home-paper) / 0.55) 65%,
     transparent 100%
   );
 }
@@ -2410,32 +2411,30 @@ h3,
   text-align: center;
 }
 .na-home-hero__over {
-  color: rgb(255 255 255 / 0.85);
+  color: rgb(var(--home-forest));
 }
 .na-home-hero__title {
   margin: 0;
-  color: #fff;
+  color: rgb(var(--home-ink));
   font-size: clamp(2.75rem, 7vw, 5.25rem);
   font-weight: 800;
   line-height: 1.02;
   letter-spacing: -0.035em;
-  text-shadow: 0 2px 24px rgb(var(--home-navy) / 0.8);
 }
 .na-home-hero .na-gradient-text {
-  color: rgb(var(--home-yellow));
+  color: rgb(var(--home-forest));
 }
 .na-home-hero .na-hero__sub {
   max-width: 38rem;
-  color: rgb(255 255 255 / 0.9);
+  color: rgb(var(--home-ink) / 0.86);
   font-size: 1.1875rem;
   line-height: 1.55;
-  text-shadow: 0 1px 12px rgb(var(--home-navy) / 0.9);
 }
 .na-home-hero .na-hero__card {
-  border: 0;
+  border: 1px solid rgb(var(--home-ink) / 0.12);
   box-shadow:
-    0 0 0 1px rgb(255 255 255 / 0.15),
-    0 24px 64px rgb(0 0 0 / 0.5);
+    0 1px 2px rgb(var(--home-ink) / 0.12),
+    0 18px 48px rgb(var(--home-ink) / 0.16);
 }
 button.na-chip.na-home-chip {
   display: inline-flex;
@@ -2444,28 +2443,30 @@ button.na-chip.na-home-chip {
   min-height: 40px;
   padding: 0 0.875rem;
   cursor: pointer;
-  color: #fff;
-  background: rgb(var(--home-navy) / 0.85);
-  border: 1px solid rgb(255 255 255 / 0.45);
+  color: rgb(var(--home-ink));
+  background: #fff;
+  border: 1px solid rgb(var(--home-ink) / 0.3);
   border-radius: 999px;
+  box-shadow: 0 1px 2px rgb(var(--home-ink) / 0.1);
   transition:
     background var(--dur-1),
     border-color var(--dur-1),
+    color var(--dur-1),
     transform var(--dur-1);
 }
 button.na-chip.na-home-chip:hover {
-  color: rgb(var(--home-navy));
-  background: rgb(var(--home-yellow));
-  border-color: rgb(var(--home-yellow));
+  color: #fff;
+  background: rgb(var(--home-forest));
+  border-color: rgb(var(--home-forest));
   transform: translateY(-2px);
 }
 
-/* backdrop: real isochrone streets */
+/* backdrop: real isochrone streets on a paper canvas */
 .na-backdrop {
   position: absolute;
   inset: 0;
   z-index: -2;
-  background-image: radial-gradient(rgb(255 255 255 / 0.08) 1px, transparent 1px);
+  background-image: radial-gradient(rgb(var(--home-ink) / 0.07) 1px, transparent 1px);
   background-size: 22px 22px;
 }
 .na-backdrop svg {
@@ -2473,33 +2474,55 @@ button.na-chip.na-home-chip:hover {
   width: 100%;
   height: 100%;
 }
+.na-backdrop__casing {
+  stroke: #fff;
+  stroke-width: 4.5;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.9;
+  animation: na-casing 650ms var(--ease-out) both;
+}
 .na-backdrop__street {
   stroke-width: 2;
   vector-effect: non-scaling-stroke;
-  opacity: 0.62;
-  animation: na-flood 650ms var(--ease-out) both;
+  opacity: 0.85;
+  animation: na-flood 1100ms var(--ease-out) both;
 }
 .na-backdrop__pin {
-  fill: #fff;
-  stroke: rgb(var(--home-navy));
+  fill: rgb(var(--na-site));
+  stroke: #fff;
   stroke-width: 2;
   vector-effect: non-scaling-stroke;
 }
 .na-backdrop__pulse {
-  fill: rgb(var(--home-yellow) / 0.25);
-  stroke: rgb(var(--home-yellow));
+  fill: rgb(var(--na-site) / 0.16);
+  stroke: rgb(var(--na-site));
   stroke-width: 1.5;
   vector-effect: non-scaling-stroke;
   transform-box: fill-box;
   transform-origin: center;
   animation: na-pulse 2.6s ease-out infinite;
 }
-@keyframes na-flood {
+@keyframes na-casing {
   from {
     opacity: 0;
   }
   to {
-    opacity: 0.62;
+    opacity: 0.9;
+  }
+}
+/* orange front first, then the walking-time colour (same reading as the results map) */
+@keyframes na-flood {
+  0% {
+    opacity: 0;
+    stroke: var(--front);
+  }
+  25% {
+    opacity: 1;
+    stroke: var(--front);
+  }
+  100% {
+    opacity: 0.85;
+    stroke: var(--street);
   }
 }
 @keyframes na-pulse {
@@ -2513,7 +2536,7 @@ button.na-chip.na-home-chip:hover {
   }
 }
 
-/* legend + scroll cue */
+/* legend */
 .na-home-legend {
   position: absolute;
   left: 1.25rem;
@@ -2522,314 +2545,42 @@ button.na-chip.na-home-chip:hover {
   margin: 0;
   padding: 0.75rem 0.875rem;
   border-radius: 10px;
-  background: rgb(var(--home-navy) / 0.78);
-  border: 1px solid rgb(255 255 255 / 0.18);
+  background: rgb(255 255 255 / 0.94);
+  border: 1px solid rgb(var(--home-ink) / 0.15);
+  box-shadow: 0 1px 3px rgb(var(--home-ink) / 0.12);
   font-size: 0.75rem;
   line-height: 1.45;
-  color: rgb(255 255 255 / 0.88);
+  color: rgb(var(--home-ink) / 0.86);
   text-align: left;
 }
 .na-home-legend__bar {
   height: 8px;
   border-radius: 999px;
-  background: linear-gradient(90deg, #facc15, #22d3ee 50%, #818cf8);
+  background: linear-gradient(90deg, #0b2f8a, #009bd6);
 }
 .na-home-legend__ticks {
   display: flex;
   justify-content: space-between;
   margin: 0.25rem 0 0.5rem;
   font-weight: 600;
-  color: #fff;
-}
-.na-home-scroll {
-  position: absolute;
-  left: 50%;
-  bottom: 1.5rem;
-  transform: translateX(-50%);
-  display: grid;
-  justify-items: center;
-  gap: 0.125rem;
-  color: #fff;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  text-decoration: none;
-}
-.na-home-scroll svg {
-  animation: na-bob 1.8s ease-in-out infinite;
-}
-.na-home-scroll:hover {
-  color: rgb(var(--home-yellow));
-}
-@keyframes na-bob {
-  0%,
-  100% {
-    translate: 0 0;
-  }
-  50% {
-    translate: 0 5px;
-  }
+  color: rgb(var(--home-ink));
 }
 @media (max-width: 860px) {
   .na-home-legend {
     position: static;
     margin: 2rem auto 0;
   }
-  .na-home-scroll {
-    display: none;
-  }
   .na-home-hero {
     padding-bottom: 2rem;
   }
 }
 
-/* sections */
-html {
-  scroll-behavior: smooth;
-}
-.na-home-section {
-  padding: 5rem 1rem;
-  background: #fff;
-  scroll-margin-top: var(--na-header-h);
-}
-.na-home-section--tint {
-  background: #e8f0fe;
-}
-.na-home-section__inner {
-  width: 100%;
-  max-width: 72rem;
-  margin: 0 auto;
-}
-.na-home-head {
-  max-width: 44rem;
-  margin-bottom: 2rem;
-}
-.na-home-head .na-overline {
-  color: rgb(var(--na-accent));
-}
-.na-home-head h2,
-.na-home-band h2 {
-  margin: 0.5rem 0 0.75rem;
-  font-size: clamp(1.75rem, 3.6vw, 2.625rem);
-  font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: -0.03em;
-}
-.na-home-head p {
-  margin: 0;
-  font-size: 1.0625rem;
-  line-height: 1.6;
-  color: rgb(var(--na-muted));
-}
-.na-home-controls {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.75rem 1.25rem;
-  margin-bottom: 1.5rem;
-}
-.na-home-minutes {
-  display: inline-flex;
-  padding: 4px;
-  gap: 4px;
-  border-radius: 999px;
-  background: rgb(var(--na-text));
-}
-.na-home-minutes__item {
-  min-height: 40px;
-  padding: 0 1.125rem;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  color: #fff;
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    background var(--dur-1),
-    color var(--dur-1);
-}
-.na-home-minutes__item:hover {
-  background: rgb(255 255 255 / 0.15);
-}
-.na-home-minutes__item[aria-checked='true'] {
-  background: rgb(var(--home-yellow));
-  color: rgb(var(--home-navy));
-}
-.na-home-total {
-  margin: 0 0 1rem;
-  font-size: 1.125rem;
-  color: rgb(var(--na-muted));
-}
-.na-home-total strong {
-  font-size: 2.25rem;
-  font-weight: 800;
-  color: rgb(var(--na-text));
-}
-.na-home-tiles {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(12.5rem, 1fr));
-  gap: 0.75rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.na-home-tile {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.875rem 1rem;
-  border-radius: 12px;
-  border: 1px solid var(--na-line);
-  background: #fff;
-  box-shadow: var(--na-ambient);
-  transition:
-    transform var(--dur-2) var(--ease-out),
-    border-color var(--dur-2);
-}
-.na-home-tile:hover {
-  transform: translateY(-3px);
-  border-color: rgb(var(--na-accent));
-}
-.na-home-tile__icon {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  color: #fff;
-  background: rgb(var(--na-accent));
-}
-.na-home-tile__label {
-  font-weight: 600;
-}
-.na-home-tile__value {
-  font-size: 1.75rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-}
-.na-home-tile.is-empty .na-home-tile__icon {
-  background: rgb(var(--na-muted));
-}
-.na-home-tile.is-empty .na-home-tile__value {
-  color: rgb(var(--na-muted));
-}
-.na-home-cta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 1rem 1.5rem;
-  margin-top: 2rem;
-}
-.na-home-link {
-  font-weight: 600;
-}
-.na-home-steps {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.na-home-step {
-  padding: 1.5rem;
-  transition: transform var(--dur-2) var(--ease-out);
-}
-.na-home-step:hover {
-  transform: translateY(-4px);
-}
-.na-home-step__n {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: rgb(var(--home-navy));
-  color: rgb(var(--home-yellow));
-  font-size: 1.25rem;
-  font-weight: 800;
-}
-.na-home-step h3 {
-  margin: 1rem 0 0.375rem;
-  font-size: 1.1875rem;
-}
-.na-home-step p {
-  margin: 0;
-  line-height: 1.6;
-  color: rgb(var(--na-muted));
-}
-.na-home .na-explainer {
-  transition: transform var(--dur-2) var(--ease-out);
-}
-.na-home .na-explainer:hover {
-  transform: translateY(-4px);
-}
-@media (max-width: 860px) {
-  .na-home-steps {
-    grid-template-columns: 1fr;
-  }
-  .na-home-section {
-    padding: 3.5rem 1rem;
-  }
-}
-
-/* planner band */
-.na-home-band {
-  padding: 4.5rem 1rem;
-  background: rgb(var(--home-navy));
-  color: #fff;
-}
-.na-home-band__inner {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem 3rem;
-}
-.na-home-band__inner > div {
-  max-width: 42rem;
-}
-.na-home-band p {
-  margin: 0;
-  font-size: 1.0625rem;
-  line-height: 1.6;
-  color: rgb(255 255 255 / 0.88);
-}
-a.na-btn.na-home-band__btn {
-  background: rgb(var(--home-yellow));
-  color: rgb(var(--home-navy));
-  text-decoration: none;
-  font-weight: 700;
-}
-a.na-btn.na-home-band__btn:hover {
-  background: #fde047;
-}
-
-/* scroll reveal (only when the observer runs; content is visible otherwise) */
-.na-reveal-on [data-reveal] {
-  opacity: 0;
-  transform: translateY(24px);
-  transition:
-    opacity 600ms var(--ease-out),
-    transform 600ms var(--ease-out);
-}
-.na-reveal-on [data-reveal].is-in {
-  opacity: 1;
-  transform: none;
-}
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
   .na-backdrop__street,
-  .na-backdrop__pulse,
-  .na-home-scroll svg {
+  .na-backdrop__casing,
+  .na-backdrop__pulse {
     animation: none;
   }
-  .na-home-tile,
-  .na-home-step,
-  .na-home .na-explainer,
   button.na-chip.na-home-chip {
     transition: none;
   }
