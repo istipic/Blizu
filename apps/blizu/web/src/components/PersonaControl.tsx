@@ -75,6 +75,7 @@ export function PersonaControl({
             onClick={() => onChange(p.id)}
             onKeyDown={(e) => onKeyDown(e, i)}
             className="na-seg__item"
+            data-persona={p.id}
           >
             <Icon name={ICON[p.id]} size={compact ? 16 : 20} />
             <span aria-hidden="true">{SHORT[p.id]}</span>

@@ -2585,3 +2585,185 @@ button.na-chip.na-home-chip:hover {
     transition: none;
   }
 }
+
+/* ---- home: legible text over the streets (map-label halo) and playful controls -------------------- */
+.na-home-hero::after {
+  background: radial-gradient(
+    ellipse 40% 50% at 50% 36%,
+    rgb(var(--home-paper) / 0.96),
+    rgb(var(--home-paper) / 0.72) 60%,
+    rgb(var(--home-paper) / 0) 100%
+  );
+}
+.na-home-hero__title,
+.na-home-hero .na-hero__sub {
+  /* paper-coloured halo, like street names on a printed map: lines never touch the glyphs */
+  text-shadow:
+    0 0 2px rgb(var(--home-paper)),
+    0 0 4px rgb(var(--home-paper)),
+    0 0 8px rgb(var(--home-paper)),
+    0 0 16px rgb(var(--home-paper));
+}
+.na-home-hero .na-hero__sub {
+  color: rgb(var(--home-ink));
+  font-weight: 500;
+}
+.na-home-hero__over {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  background: rgb(var(--home-paper));
+  border: 1.5px solid rgb(var(--home-forest) / 0.5);
+  color: rgb(var(--home-forest));
+  font-weight: 700;
+}
+
+/* card */
+.na-home-hero .na-hero__card {
+  border: 2px solid rgb(var(--home-ink));
+  border-radius: 20px;
+  box-shadow: 0 6px 0 rgb(var(--home-ink));
+}
+.na-home .na-input {
+  border: 2px solid rgb(var(--home-ink));
+  border-radius: 14px;
+  background: #fff;
+  min-height: 52px;
+}
+.na-home .na-input:focus-visible {
+  outline: 3px solid rgb(var(--home-forest) / 0.35);
+  outline-offset: 1px;
+  border-color: rgb(var(--home-forest));
+}
+
+/* persona tiles: each persona has its own natural colour */
+.na-home .na-seg {
+  gap: 0.625rem;
+  padding: 0;
+  background: transparent;
+}
+.na-home .na-seg__item {
+  --p: 11 87 208;
+  --pt: 227 236 251;
+  min-height: 64px;
+  border: 2px solid rgb(var(--home-ink));
+  border-radius: 14px;
+  background: #fff;
+  color: rgb(var(--home-ink));
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  box-shadow: 0 4px 0 rgb(var(--home-ink));
+  transition:
+    transform 120ms var(--ease-spring),
+    box-shadow 120ms var(--ease-out),
+    background 120ms;
+}
+.na-home .na-seg__item[data-persona='starija'] {
+  --p: 180 68 26; /* #B4441A terracotta */
+  --pt: 251 231 221;
+}
+.na-home .na-seg__item[data-persona='roditelj'] {
+  --p: 30 94 58; /* #1E5E3A forest */
+  --pt: 225 240 230;
+}
+.na-home .na-seg__item[data-persona='kolica'] {
+  --p: 138 90 0; /* #8A5A00 ochre */
+  --pt: 251 240 214;
+}
+.na-home .na-seg__item svg {
+  color: rgb(var(--p));
+}
+.na-home .na-seg__item:hover {
+  background: rgb(var(--pt));
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 rgb(var(--home-ink));
+}
+.na-home .na-seg__item:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 rgb(var(--home-ink));
+}
+.na-home .na-seg__item[aria-checked='true'] {
+  background: rgb(var(--pt));
+  color: rgb(var(--p));
+  border-color: rgb(var(--p));
+  box-shadow: 0 4px 0 rgb(var(--p));
+}
+
+/* main button */
+.na-home .na-hero__card .na-btn {
+  min-height: 54px;
+  border: 2px solid rgb(var(--home-ink));
+  border-radius: 14px;
+  background: rgb(var(--home-forest));
+  color: #fff;
+  font-size: 1.0625rem;
+  font-weight: 800;
+  box-shadow: 0 4px 0 rgb(var(--home-ink));
+  transition:
+    transform 120ms var(--ease-spring),
+    box-shadow 120ms var(--ease-out),
+    background 120ms;
+}
+.na-home .na-hero__card .na-btn:hover:not([disabled]) {
+  background: rgb(24 78 48);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 rgb(var(--home-ink));
+}
+.na-home .na-hero__card .na-btn:active:not([disabled]) {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 rgb(var(--home-ink));
+}
+.na-home .na-hero__card .na-btn[disabled] {
+  background: rgb(240 234 220);
+  color: rgb(var(--home-ink) / 0.6);
+  border: 2px dashed rgb(var(--home-ink) / 0.4);
+  box-shadow: none;
+}
+
+/* example chips */
+button.na-chip.na-home-chip {
+  min-height: 42px;
+  border: 2px solid rgb(var(--home-ink));
+  font-weight: 700;
+  box-shadow: 0 3px 0 rgb(var(--home-ink));
+  transition:
+    transform 120ms var(--ease-spring),
+    box-shadow 120ms var(--ease-out),
+    background 120ms;
+}
+button.na-chip.na-home-chip:hover {
+  color: rgb(var(--home-ink));
+  background: rgb(255 233 168); /* #FFE9A8 butter */
+  border-color: rgb(var(--home-ink));
+  transform: translateY(-2px) rotate(-1deg);
+  box-shadow: 0 5px 0 rgb(var(--home-ink));
+}
+button.na-chip.na-home-chip:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 rgb(var(--home-ink));
+}
+button.na-chip.na-home-chip svg {
+  color: rgb(var(--na-site));
+}
+
+/* legend matches the card */
+.na-home-legend {
+  border: 2px solid rgb(var(--home-ink));
+  border-radius: 14px;
+  box-shadow: 0 4px 0 rgb(var(--home-ink));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .na-home .na-seg__item,
+  .na-home .na-hero__card .na-btn,
+  button.na-chip.na-home-chip {
+    transition: none;
+    transform: none !important;
+  }
+}
+@media (min-width: 861px) {
+  .na-home-legend {
+    max-width: 15rem;
+    font-size: 0.6875rem;
+  }
+}
