@@ -132,28 +132,31 @@ export function AccessCard({
         </ul>
       </section>
 
-      <p className="na-place__note" data-testid="data-note">
-        Vrijeme hoda računa se po pješačkoj mreži OpenStreetMapa (© OpenStreetMap contributors), a
-        adresa je udaljena {Math.round(result.snapped_distance_m)} m od najbliže staze. Izračunato:{' '}
-        {formatDateTimeHr(result.computed_at)}.{' '}
-        {usedSources.length > 0 ? (
-          <>
-            Izvori:{' '}
-            {usedSources
-              .map((id) => {
-                const s = byId.get(id);
-                return s
-                  ? `${s.publisher} (dohvaćeno ${formatDateTimeHr(s.retrieved_at) ?? 'nepoznato'})`
-                  : id;
-              })
-              .join('; ')}
-            .
-          </>
-        ) : null}{' '}
-        <a href="/metodologija" className="underline">
-          Metodologija
-        </a>
-      </p>
+      <details className="na-place__note na-place__details">
+        <summary>Izvori i način izračuna</summary>
+        <p data-testid="data-note">
+          Vrijeme hoda računa se po pješačkoj mreži OpenStreetMapa (© OpenStreetMap contributors), a
+          adresa je udaljena {Math.round(result.snapped_distance_m)} m od najbliže staze.
+          Izračunato: {formatDateTimeHr(result.computed_at)}.{' '}
+          {usedSources.length > 0 ? (
+            <>
+              Izvori:{' '}
+              {usedSources
+                .map((id) => {
+                  const s = byId.get(id);
+                  return s
+                    ? `${s.publisher} (dohvaćeno ${formatDateTimeHr(s.retrieved_at) ?? 'nepoznato'})`
+                    : id;
+                })
+                .join('; ')}
+              .
+            </>
+          ) : null}{' '}
+          <a href="/metodologija" className="underline">
+            Metodologija
+          </a>
+        </p>
+      </details>
     </article>
   );
 }

@@ -114,7 +114,7 @@ export function CardPage() {
     // Same structure as the loaded screen, so nothing jumps when the result arrives.
     return (
       <div key="pending" className="na-screen">
-        <div className="na-panel" data-state="expanded">
+        <div className="na-panel na-panel--play" data-state="expanded">
           {backLink}
           <h1 className="text-xl" style={{ margin: 0, overflowWrap: 'anywhere' }}>
             {label}
@@ -151,7 +151,7 @@ export function CardPage() {
   const plannerHref = `/planiranje?lat=${lat.toFixed(6)}&lon=${lon.toFixed(6)}&persona=${persona}`;
   return (
     <div key="loaded" className="na-screen">
-      <div className="na-panel" data-state={sheet} id="results-panel">
+      <div className="na-panel na-panel--play" data-state={sheet} id="results-panel">
         <button
           type="button"
           className="na-sheet-handle"
