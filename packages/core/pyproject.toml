@@ -1,7 +1,7 @@
 [project]
 name = "opendata-core"
 version = "0.1.0"
-description = "Shared foundation (config, HTTP, provenance, CKAN, geo, API factory) for the datathon-2026 apps"
+description = "Shared foundation (config, HTTP, provenance, CKAN, geo, API factory) for Blizu"
 requires-python = ">=3.12,<3.13"
 license = { text = "EUPL-1.2" }
 dependencies = [

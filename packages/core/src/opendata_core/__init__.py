@@ -1,1 +1,1 @@
-"""Shared foundation for the datathon-2026 apps."""
+"""Shared foundation (config, HTTP, provenance, geo, API factory) for Blizu."""

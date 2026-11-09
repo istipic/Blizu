@@ -10,8 +10,7 @@
 @tailwind utilities;
 
 /*
- * Blizu "Night Atlas" (now a light, Google-Maps-like theme). Only this file overrides @dt/ui tokens (Otporko and
- * Birokratko keep theirs). The neutral scale is mapped so shared components (ErrorState,
+ * Blizu "Night Atlas" (now a light, Google-Maps-like theme). Only this file overrides @dt/ui tokens. The neutral scale is mapped so shared components (ErrorState,
  * DataSourcesPage, chips ...) match. Contrast of every text/background
  * pair is checked by scripts/contrast.mjs (run by src/lib/contrast.test.ts).
  */

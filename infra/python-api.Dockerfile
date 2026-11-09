@@ -11,7 +11,7 @@ ENV UV_LINK_MODE=copy UV_COMPILE_BYTECODE=1 UV_PYTHON_DOWNLOADS=never
 WORKDIR /app
 
 ARG APP
-# Optional extras of the app API, e.g. --build-arg UV_SYNC_ARGS="--extra semantic" (Blizu /search model)
+# Optional extras of the app API, e.g. --build-arg UV_SYNC_ARGS="--extra semantic" (/search model)
 ARG UV_SYNC_ARGS=""
 COPY pyproject.toml uv.lock README.md .python-version ./
 COPY packages/core packages/core

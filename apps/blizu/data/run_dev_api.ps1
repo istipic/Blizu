@@ -1,6 +1,6 @@
 param([int]$Port = 8010)
 # Dev API for Blizu: DATABASE_URL is the root .env URL (database blizu); derived graph files in apps/blizu/data.
-$root = "C:\ajmobree\projekt1\datathon-2026"
+$root = (Resolve-Path "$PSScriptRoot\..\..\..").Path
 Set-Location $root
 $env:PYTHONUTF8 = "1"
 $line = (Get-Content "$root\.env" | Where-Object { $_ -match '^DATABASE_URL=' } | Select-Object -First 1) -replace '^DATABASE_URL=', ''

@@ -9,11 +9,9 @@ resolution-markers = [
 
 [manifest]
 members = [
+    "blizu",
     "blizu-api",
-    "datathon-2026",
-    "nabavaradar-api",
     "opendata-core",
-    "otporno-api",
 ]
 
 [[package]]
@@ -103,6 +101,39 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/66/83/6607060659998f00afdea0d8375c1e6e2b7d515ab905090d9a5a02f48851/ast_serialize-0.13.1-cp39-abi3-win32.whl", hash = "sha256:4f98da562e5901d69c7dd30885594c5438f859edf354e9ac7517d188fb026c3a", size = 1131889, upload-time = "2026-10-17T00:04:12.953Z" },
     { url = "https://files.pythonhosted.org/packages/9f/6f/bafd6490fe7b355627fabe95f4417e3d02da93102c8552550eb9a0774e1e/ast_serialize-0.13.1-cp39-abi3-win_amd64.whl", hash = "sha256:ddf7cbc9c8abf70102c4a088efe154bb86bfb825b0a10e556d2b15972cf99bd7", size = 1171153, upload-time = "2026-10-17T00:04:14.362Z" },
     { url = "https://files.pythonhosted.org/packages/11/25/4235f4b375a67a37ac595bf478a5407a744eaf7b64113c1c3a5432b8d954/ast_serialize-0.13.1-cp39-abi3-win_arm64.whl", hash = "sha256:48f11d96c9ec71119612f8e79a8c55c12f2b136716d68347433c561d27a25f43", size = 1139035, upload-time = "2026-10-17T00:04:15.767Z" },
+]
+
+[[package]]
+name = "blizu"
+version = "0.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "blizu-api" },
+    { name = "opendata-core" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "mypy" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "respx" },
+    { name = "ruff" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "blizu-api", editable = "apps/blizu/api" },
+    { name = "opendata-core", editable = "packages/core" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "mypy", specifier = ">=1.11" },
+    { name = "pytest", specifier = ">=8" },
+    { name = "pytest-cov", specifier = ">=5" },
+    { name = "respx", specifier = ">=0.21" },
+    { name = "ruff", specifier = ">=0.6" },
 ]
 
 [[package]]
@@ -294,43 +325,6 @@ nvrtc = [
 ]
 nvtx = [
     { name = "nvidia-nvtx", marker = "platform_machine == 'aarch64' or platform_machine == 'x86_64'" },
-]
-
-[[package]]
-name = "datathon-2026"
-version = "0.1.0"
-source = { virtual = "." }
-dependencies = [
-    { name = "blizu-api" },
-    { name = "nabavaradar-api" },
-    { name = "opendata-core" },
-    { name = "otporno-api" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "mypy" },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "respx" },
-    { name = "ruff" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "blizu-api", editable = "apps/blizu/api" },
-    { name = "nabavaradar-api", editable = "apps/nabavaradar/api" },
-    { name = "opendata-core", editable = "packages/core" },
-    { name = "otporno-api", editable = "apps/otporno/api" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "mypy", specifier = ">=1.11" },
-    { name = "pytest", specifier = ">=8" },
-    { name = "pytest-cov", specifier = ">=5" },
-    { name = "respx", specifier = ">=0.21" },
-    { name = "ruff", specifier = ">=0.6" },
 ]
 
 [[package]]
@@ -728,21 +722,6 @@ wheels = [
 ]
 
 [[package]]
-name = "nabavaradar-api"
-version = "0.1.0"
-source = { editable = "apps/nabavaradar/api" }
-dependencies = [
-    { name = "opendata-core", extra = ["semantic"] },
-    { name = "pyyaml" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "opendata-core", extras = ["semantic"], editable = "packages/core" },
-    { name = "pyyaml", specifier = ">=6" },
-]
-
-[[package]]
 name = "narwhals"
 version = "2.28.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1056,25 +1035,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/0c/6d/42279fb31b09f0532ec4de90604ee8078adad66b89865887cdf014f651f1/osmnx-2.1.1.tar.gz", hash = "sha256:0785166487d4d8da5a551dac3d1562fe114fb39f3bf66f261c8b4d60baee9295", size = 90368, upload-time = "2026-07-21T19:24:06.779Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ed/08/450c5c707493cf3a1da91050cf6b9b92e5279676f28e85d85b81d9e46f85/osmnx-2.1.1-py3-none-any.whl", hash = "sha256:6680c98312a8c327dea01da8ec59328bf1d7b0e0cab42db6ce500d0cb83b87e5", size = 104711, upload-time = "2026-07-21T19:24:05.274Z" },
-]
-
-[[package]]
-name = "otporno-api"
-version = "0.1.0"
-source = { editable = "apps/otporno/api" }
-dependencies = [
-    { name = "jinja2" },
-    { name = "opendata-core" },
-    { name = "osmium" },
-    { name = "pyyaml" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "jinja2", specifier = ">=3" },
-    { name = "opendata-core", editable = "packages/core" },
-    { name = "osmium", specifier = ">=4" },
-    { name = "pyyaml", specifier = ">=6" },
 ]
 
 [[package]]
