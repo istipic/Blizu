@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import accessStarija from '../__fixtures__/2026-11-03_access_avdubrovnik_starija.json';
 import accessTrg from '../__fixtures__/2026-11-03_access_trg_opce.json';
+import isoStarija from '../__fixtures__/2026-11-05_isochrone_starija.json';
 import optimise from '../__fixtures__/2026-11-03_optimise_vrtic_roditelj_3.json';
 import problem from '../__fixtures__/2026-11-03_problem_422.json';
 import scoring from '../__fixtures__/2026-11-03_scoring.json';
@@ -156,6 +157,33 @@ describe('HomePage', () => {
     expect(chips).toHaveLength(3);
     expect(chips.map((c) => c.textContent)).toEqual(
       expect.arrayContaining([expect.stringContaining('Trg bana Jelačića 1')]),
+    );
+  });
+
+  it('draws the real isochrone behind the hero and counts facilities per walking time', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) =>
+        url.startsWith('/api/v1/isochrone') ? json(isoStarija) : json(sources),
+      ),
+    );
+    renderAt('/?persona=starija', <HomePage />, '/');
+    const backdrop = await screen.findByTestId('walk-backdrop');
+    // one path per 0.25-minute bucket of the recorded response
+    expect(backdrop.querySelectorAll('path')).toHaveLength(isoStarija.buckets.features.length);
+
+    const tiles = screen
+      .getAllByRole('listitem')
+      .filter((li) => li.className.includes('na-home-tile'));
+    expect(tiles).toHaveLength(9);
+    const ljekarna = () => tiles.find((t) => t.textContent?.startsWith('Ljekarna'))!;
+    await waitFor(() =>
+      expect(ljekarna().textContent).toBe(`Ljekarna${isoStarija.counts['10'].ljekarna}`),
+    );
+
+    fireEvent.click(screen.getByRole('radio', { name: '5 min' }));
+    await waitFor(() =>
+      expect(ljekarna().textContent).toBe(`Ljekarna${isoStarija.counts['5'].ljekarna}`),
     );
   });
 
